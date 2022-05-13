@@ -5,14 +5,22 @@
 
 (def state  (r/atom {:snake (snake/initial-model)}))
 
-(defn view [model]
-  [ui/theme-provider ui/dark-theme
-   [snake/view (:snake model)]])
+(defn step [msg model]
+  {:snake (snake/step msg (:snake model))})
+
+(defn dispatch! [msg]
+  (swap! state (fn [model] (step msg model))))
+
+(defn view []
+  (let [model @state]
+    [ui/theme-provider ui/dark-theme
+     [snake/view (:snake model) dispatch!]]))
+
 
 (defn ^:dev/after-load render
   "Render the toplevel component for this app."
   []
-  (r/render [view @state] (.getElementById js/document "app")))
+  (r/render [view] (.getElementById js/document "app")))
 
 
 (defn ^:export main

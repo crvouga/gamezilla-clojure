@@ -15,6 +15,16 @@
 
 ;; 
 ;; 
+;; step
+;; 
+;; 
+
+
+(defn step [msg model]
+  (update model :tail (fn [tail] (conj tail (msg 1)))))
+
+;; 
+;; 
 ;; view
 ;; 
 ;; 
@@ -30,15 +40,17 @@
     :light
     :dark))
 
-(defn view-tiles [model]
+(defn view-tiles [model dispatch!]
   [:g
    (for [x (range 0 (:max-x model))
          y (range 0 (:max-y model))]
+     ^{:key {:x x :y y}}
      [:rect {:x x
              :y y
              :width 1
              :height 1
              :stroke "transparent"
+             :onClick (fn [] (dispatch! [:board-clicked {:x x :y y}]))
              :fill (theme (to-tile-color x y))}])])
 
 (defn to-snake [model]
@@ -47,6 +59,7 @@
 (defn view-snake [model]
   [:g
    (for [position (to-snake model)]
+     ^{:key position}
      [:rect {:x (:x position)
              :y (:y position)
              :width 1
@@ -57,13 +70,13 @@
 (defn view-apple [model]
   [:g [:rect {:x (-> model :apple :x) :y (-> model :apple :y) :width 1 :height 1 :fill :red}]])
 
-(defn view [model dispatch]
+(defn view [model dispatch!]
   [:svg {:x 0
          :y 0
-         :width :100%
-         :height :100%
+         :width "100%"
+         :height "100%"
          :viewBox [0 0 (:max-x model) (:max-y model)]}
-   [view-tiles model]
+   [view-tiles model dispatch!]
    [view-snake model]
    [view-apple model]])
 
