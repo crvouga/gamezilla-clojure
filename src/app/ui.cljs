@@ -9,7 +9,7 @@
 (def dark-theme
   (create-theme {:palette {:mode :dark}}))
 
-(defn theme-provider [theme & child]
+(defn theme-provider [theme child]
   [:> styles/ThemeProvider {:theme theme} [:> mui/CssBaseline] child])
 
 

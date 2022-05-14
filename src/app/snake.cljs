@@ -1,4 +1,9 @@
-(ns app.snake)
+(ns app.snake
+  (:require [clojure.core.async :as async]
+            [clojure.core.match :refer [match]]
+            [goog.events :as events]
+            [goog.events.KeyCodes]
+            [goog.events.EventType]))
 
 ;; 
 ;; 
@@ -6,12 +11,19 @@
 ;; 
 ;; 
 
+(def direction->vector
+  {:left {:dx -1 :dy 0}
+   :right {:dx 1 :dy 0}
+   :up {:dx 0 :dy -1}
+   :down {:dx 0 :dy 1}})
+
 (defn initial-model []
   {:max-x 15
    :max-y 15
    :head {:x 5 :y 6}
    :tail #{{:x 4 :y 6} {:x 3 :y 6}}
-   :apple {:x 10 :y 6}})
+   :apple {:x 10 :y 6}
+   :direction :right})
 
 ;; 
 ;; 
@@ -20,8 +32,21 @@
 ;; 
 
 
+
+
 (defn step [msg model]
-  (update model :tail (fn [tail] (conj tail (msg 1)))))
+  (match msg
+    [:board-clicked position]
+    (assoc model :tail (conj (:tail model) position))
+
+    [:keyboard-pressed]
+    model
+
+    :else
+    model))
+
+
+
 
 ;; 
 ;; 
@@ -49,8 +74,8 @@
              :y y
              :width 1
              :height 1
-             :stroke "transparent"
-             :onClick (fn [] (dispatch! [:board-clicked {:x x :y y}]))
+             :stroke :none
+             :onMouseDown (fn [] (dispatch! [:board-clicked {:x x :y y}]))
              :fill (theme (to-tile-color x y))}])])
 
 (defn to-snake [model]
@@ -64,11 +89,17 @@
              :y (:y position)
              :width 1
              :height 1
-             :stroke "transparent"
+             :stroke :none
              :fill (theme :snake)}])])
 
 (defn view-apple [model]
-  [:g [:rect {:x (-> model :apple :x) :y (-> model :apple :y) :width 1 :height 1 :fill :red}]])
+  [:g
+   [:rect {:stroke :none
+           :x (-> model :apple :x)
+           :y (-> model :apple :y)
+           :width 1
+           :height 1
+           :fill :red}]])
 
 (defn view [model dispatch!]
   [:svg {:x 0
@@ -86,4 +117,14 @@
 ;; 
 ;; 
 ;; 
+
+
+
+(def msg-chan (async/chan))
+
+(events/listen
+ js/document
+ goog.events.EventType.KEYDOWN
+ (fn [event]
+   (async/put! msg-chan [:keyboard-pressed event])))
 

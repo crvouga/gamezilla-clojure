@@ -1,7 +1,8 @@
 (ns app.core
   (:require [reagent.core :as r]
             [app.ui :as ui]
-            [app.snake :as snake]))
+            [app.snake :as snake]
+            [clojure.core.async :as async]))
 
 (def state  (r/atom {:snake (snake/initial-model)}))
 
@@ -9,12 +10,23 @@
   {:snake (snake/step msg (:snake model))})
 
 (defn dispatch! [msg]
-  (swap! state (fn [model] (step msg model))))
+  (println)
+  (println (str "before " @state))
+  (println msg)
+  (swap! state (fn [model] (step msg model)))
+  (println (str "after " @state))
+  (println))
 
 (defn view []
   (let [model @state]
     [ui/theme-provider ui/dark-theme
      [snake/view (:snake model) dispatch!]]))
+
+
+(async/go
+  (while true
+    (let [snake-msg (async/<! snake/msg-chan)]
+      (dispatch! snake-msg))))
 
 
 (defn ^:dev/after-load render
