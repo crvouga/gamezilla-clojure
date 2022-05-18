@@ -10,12 +10,13 @@
   {:snake (snake/step msg (:snake model))})
 
 (defn dispatch! [msg]
-  (println)
-  (println (str "before " @state))
-  (println msg)
+  ;; (println)
+  ;; (println (str "before " @state))
+  ;; (println msg)
   (swap! state (fn [model] (step msg model)))
-  (println (str "after " @state))
-  (println))
+  ;; (println (str "after " @state))
+  ;; (println)
+  )
 
 (defn view []
   (let [model @state]

@@ -11,19 +11,15 @@
 ;; 
 ;; 
 
-(def direction->vector
-  {:left {:dx -1 :dy 0}
-   :right {:dx 1 :dy 0}
-   :up {:dx 0 :dy -1}
-   :down {:dx 0 :dy 1}})
-
 (defn initial-model []
   {:max-x 15
    :max-y 15
    :head {:x 5 :y 6}
-   :tail #{{:x 4 :y 6} {:x 3 :y 6}}
+   :tail '({:x 4 :y 6} {:x 3 :y 6})
    :apple {:x 10 :y 6}
+   :tail-length 4
    :direction :right})
+
 
 ;; 
 ;; 
@@ -32,15 +28,35 @@
 ;; 
 
 
+(def direction->vector
+  {:left {:x -1 :y 0}
+   :right {:x 1 :y 0}
+   :up {:x 0 :y -1}
+   :down {:x 0 :y 1}})
 
+(defn to-next-head [model]
+  (merge-with + (:head model) (direction->vector (:direction model))))
+
+(defn to-next-tail [model]
+  (take (:tail-length model) (conj (:tail model) (:head model))))
+
+(defn tick [model]
+  (merge model {:head (to-next-head model) :tail (to-next-tail model)}))
+
+(defn board-clicked [model position]
+  (assoc model :tail (conj (:tail model) position)))
 
 (defn step [msg model]
   (match msg
     [:board-clicked position]
-    (assoc model :tail (conj (:tail model) position))
+    model
+    ;; (board-clicked model position)
 
     [:keyboard-pressed]
     model
+
+    [:tick]
+    (tick model)
 
     :else
     model))
@@ -106,6 +122,7 @@
          :y 0
          :width "100%"
          :height "100%"
+         :onMouseDown (fn [event] (println event))
          :viewBox [0 0 (:max-x model) (:max-y model)]}
    [view-tiles model dispatch!]
    [view-snake model]
@@ -114,11 +131,9 @@
 
 ;; 
 ;; 
+;; msg
 ;; 
 ;; 
-;; 
-
-
 
 (def msg-chan (async/chan))
 
@@ -128,3 +143,7 @@
  (fn [event]
    (async/put! msg-chan [:keyboard-pressed event])))
 
+(async/go
+  (while true
+    (async/<! (async/timeout 1000))
+    (async/>! msg-chan [:tick])))
