@@ -40,8 +40,11 @@
 (defn to-next-tail [model]
   (take (:tail-length model) (conj (:tail model) (:head model))))
 
+(defn to-next-snake [model]
+  {:head (to-next-head model) :tail (to-next-tail model)})
+
 (defn tick [model]
-  (merge model {:head (to-next-head model) :tail (to-next-tail model)}))
+  (merge model (to-next-snake model)))
 
 (defn board-clicked [model position]
   (assoc model :tail (conj (:tail model) position)))
