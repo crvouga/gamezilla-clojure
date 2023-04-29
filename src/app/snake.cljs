@@ -5,11 +5,11 @@
             [goog.events.KeyCodes]
             [goog.events.EventType]))
 
-;; 
-;; 
+;;
+;;
 ;; model
-;; 
-;; 
+;;
+;;
 
 (defn initial-model []
   {:max-x 15
@@ -21,11 +21,11 @@
    :direction :right})
 
 
-;; 
-;; 
+;;
+;;
 ;; step
-;; 
-;; 
+;;
+;;
 
 
 (def direction->vector
@@ -49,6 +49,15 @@
 (defn board-clicked [model position]
   (assoc model :tail (conj (:tail model) position)))
 
+
+(defmulti step (fn [{:keys [msg]}] (:type msg)))
+
+(defmethod step :board-clicked [{:keys [msg model]}]
+  (assoc model :tail (conj (:tail model) position)))
+
+
+
+
 (defn step [msg model]
   (match msg
     [:board-clicked position]
@@ -67,11 +76,11 @@
 
 
 
-;; 
-;; 
+;;
+;;
 ;; view
-;; 
-;; 
+;;
+;;
 
 (def theme
   {:light  "#AAD751"
@@ -132,11 +141,11 @@
    [view-apple model]])
 
 
-;; 
-;; 
+;;
+;;
 ;; msg
-;; 
-;; 
+;;
+;;
 
 (def msg-chan (async/chan))
 
