@@ -52,26 +52,23 @@
 
 (defmulti step (fn [{:keys [msg]}] (:type msg)))
 
-(defmethod step :board-clicked [{:keys [msg model]}]
+(defmethod step ::board-clicked [{:keys [msg model]}]
   (assoc model :tail (conj (:tail model) position)))
 
+(defmethod step ::tick [{:keys [msg model]}]
+  (assoc model :tail (conj (:tail model) position)))
+
+(defmethon step ::keyboard-pressed [{:keys [msg model]}]
+  (match (:keyCode msg)
+    goog.events.KeyCodes.LEFT (assoc model :direction :left)
+    goog.events.KeyCodes.RIGHT (assoc model :direction :right)
+    goog.events.KeyCodes.UP (assoc model :direction :up)
+    goog.events.KeyCodes.DOWN (assoc model :direction :down)
+    model)
 
 
 
-(defn step [msg model]
-  (match msg
-    [:board-clicked position]
-    model
-    ;; (board-clicked model position)
 
-    [:keyboard-pressed]
-    model
-
-    [:tick]
-    (tick model)
-
-    :else
-    model))
 
 
 
@@ -88,8 +85,7 @@
    :snake "#4573E8"})
 
 (defn to-tile-color [x y]
-  (if (or (and (odd? x) (even? y))
-          (and (even? x) (odd? y)))
+  (if (or (and (odd? x) (even? y)) (and (even? x) (odd? y)))
     :light
     :dark))
 

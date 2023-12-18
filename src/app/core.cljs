@@ -6,8 +6,20 @@
 
 (def state  (r/atom {:snake (snake/initial-model)}))
 
+(defmulti step (fn [{ :keys [msg] }] (:type msg)))
+
+(defmethod step :time-passed [{ :keys [msg, model] }]
+    {:snake (snake/step msg (:snake model))})
+
+(defmethod step :time-passed [{ :keys [msg, model] }]
+    {:snake (snake/step msg (:snake model))})
+
+
 (defn step [msg model]
   {:snake (snake/step msg (:snake model))})
+
+
+
 
 (defn dispatch! [msg]
   ;; (println)
@@ -40,3 +52,16 @@
   "Run application startup logic."
   []
   (render))
+
+
+
+(defrecord User [user-id])
+
+
+(defrecord UserDb)
+
+(defprotocol UserStore
+  (get-one-by-id [user-id])
+  (search-by-name)
+  )
+
